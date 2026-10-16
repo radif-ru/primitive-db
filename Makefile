@@ -1,4 +1,4 @@
-.PHONY: install run build check-build package-install lint format
+.PHONY: install run build check-build package-install lint format test
 
 install:
 	uv sync
@@ -22,3 +22,6 @@ lint:
 format:
 	uv run ruff format .
 	uv run ruff check --fix .
+
+test:
+	uv run python -m doctest src/primitive_db/*.py
