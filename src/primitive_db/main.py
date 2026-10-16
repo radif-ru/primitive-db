@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Точка входа консольного приложения primitive_db."""
 
-from primitive_db.engine import welcome
+from primitive_db.engine import run
 
 
 def main() -> None:
     """Запускает приложение."""
-    welcome()
+    run()
 
 
 if __name__ == "__main__":

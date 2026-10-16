@@ -4,7 +4,7 @@ install:
 	uv sync
 
 run:
-	uv run project
+	uv run database
 
 build:
 	uv build
