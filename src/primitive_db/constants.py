@@ -2,6 +2,8 @@
 
 # --- Хранилище ---
 META_FILE = "db_meta.json"
+DATA_DIR = "data"
+DATA_FILE_EXTENSION = ".json"
 FILE_ENCODING = "utf-8"
 JSON_INDENT = 4
 
@@ -14,6 +16,9 @@ COLUMN_TYPE_SEPARATOR = ":"
 # --- Типы ---
 type Columns = dict[str, str]
 type Metadata = dict[str, Columns]
+type Value = int | str | bool
+type Row = dict[str, Value]
+type TableData = list[Row]
 
 # --- Команды ---
 EXIT_COMMAND = "exit"
