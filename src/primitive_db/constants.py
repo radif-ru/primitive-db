@@ -11,6 +11,7 @@ JSON_INDENT = 4
 ID_COLUMN = "ID"
 ID_TYPE = "int"
 VALID_TYPES = ("int", "str", "bool")
+PYTHON_TYPES = {"int": int, "str": str, "bool": bool}
 COLUMN_TYPE_SEPARATOR = ":"
 
 # --- Типы ---
@@ -61,5 +62,8 @@ MSG_NO_TABLES = "Таблиц пока нет."
 MSG_TABLE_EXISTS = 'Ошибка: Таблица "{table}" уже существует.'
 MSG_TABLE_NOT_FOUND = 'Ошибка: Таблица "{table}" не существует.'
 MSG_DUPLICATE_COLUMN = 'Ошибка: Столбец "{column}" указан несколько раз.'
+MSG_COLUMN_NOT_FOUND = 'Ошибка: Столбец "{column}" не существует в таблице "{table}".'
+MSG_ID_READONLY = 'Ошибка: Значение столбца "{column}" нельзя изменить.'
+MSG_VALUES_COUNT = "Ошибка: Ожидалось значений: {expected}, передано: {actual}."
 MSG_UNKNOWN_COMMAND = "Функции {command} нет. Попробуйте снова."
 MSG_INVALID_VALUE = "Некорректное значение: {value}. Попробуйте снова."
