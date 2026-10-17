@@ -19,6 +19,21 @@ type Metadata = dict[str, Columns]
 type Value = int | str | bool
 type Row = dict[str, Value]
 type TableData = list[Row]
+type Clause = dict[str, Value]
+
+# --- Синтаксис команд ---
+PUNCTUATION_CHARS = "=(),"
+ASSIGNMENT = "="
+LIST_SEPARATOR = ","
+OPEN_PARENTHESIS = "("
+CLOSE_PARENTHESIS = ")"
+QUOTE_CHARS = ('"', "'")
+BOOL_LITERALS = {"true": True, "false": False}
+KEYWORD_INTO = "into"
+KEYWORD_VALUES = "values"
+KEYWORD_FROM = "from"
+KEYWORD_SET = "set"
+KEYWORD_WHERE = "where"
 
 # --- Команды ---
 EXIT_COMMAND = "exit"
