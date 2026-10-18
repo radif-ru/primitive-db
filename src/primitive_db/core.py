@@ -87,9 +87,13 @@ def _check_value(column_type: str, value: Value) -> None:
     >>> _check_value("int", True)
     Traceback (most recent call last):
     ValueError: Некорректное значение: True. Попробуйте снова.
+    >>> _check_value("int", "28")
+    Traceback (most recent call last):
+    ValueError: Некорректное значение: "28". Попробуйте снова.
     """
     if type(value) is not PYTHON_TYPES[column_type]:
-        raise ValueError(MSG_INVALID_VALUE.format(value=value))
+        shown = f'"{value}"' if isinstance(value, str) else value
+        raise ValueError(MSG_INVALID_VALUE.format(value=shown))
 
 
 def validate_clause(metadata: Metadata, table_name: str, clause: Clause | None) -> None:
