@@ -92,10 +92,10 @@ def _check_value(column_type: str, value: Value) -> None:
         raise ValueError(MSG_INVALID_VALUE.format(value=value))
 
 
-def validate_clause(metadata: Metadata, table_name: str, clause: Clause) -> None:
+def validate_clause(metadata: Metadata, table_name: str, clause: Clause | None) -> None:
     """Проверяет, что столбцы условия существуют и значения подходят по типу."""
     columns = get_table_columns(metadata, table_name)
-    for column, value in clause.items():
+    for column, value in (clause or {}).items():
         if column not in columns:
             raise KeyError(MSG_COLUMN_NOT_FOUND.format(column=column, table=table_name))
         _check_value(columns[column], value)
