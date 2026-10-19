@@ -1,6 +1,14 @@
 """Декораторы операций с базой данных."""
 
-from primitive_db.constants import MSG_FILE_NOT_FOUND, MSG_UNEXPECTED_ERROR
+import prompt
+
+from primitive_db.constants import (
+    CONFIRM_ANSWER,
+    CONFIRM_MESSAGE,
+    MSG_ACTION_CANCELLED,
+    MSG_FILE_NOT_FOUND,
+    MSG_UNEXPECTED_ERROR,
+)
 
 
 def _copy_metadata(wrapper, func):
@@ -38,3 +46,22 @@ def handle_db_errors(func):
         return None
 
     return _copy_metadata(wrapper, func)
+
+
+def confirm_action(action_name: str):
+    """Фабрика декораторов: запрашивает подтверждение опасной операции.
+
+    При любом ответе, кроме «y», операция отменяется и обёртка возвращает None.
+    """
+
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            answer = prompt.string(CONFIRM_MESSAGE.format(action=action_name))
+            if answer.strip().lower() != CONFIRM_ANSWER:
+                print(MSG_ACTION_CANCELLED)
+                return None
+            return func(*args, **kwargs)
+
+        return _copy_metadata(wrapper, func)
+
+    return decorator

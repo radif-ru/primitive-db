@@ -1,6 +1,8 @@
 """Бизнес-логика базы данных: управление таблицами и CRUD-операции."""
 
 from primitive_db.constants import (
+    ACTION_DELETE_ROWS,
+    ACTION_DROP_TABLE,
     ID_COLUMN,
     ID_TYPE,
     MSG_COLUMN_NOT_FOUND,
@@ -19,7 +21,7 @@ from primitive_db.constants import (
     TableData,
     Value,
 )
-from primitive_db.decorators import handle_db_errors
+from primitive_db.decorators import confirm_action, handle_db_errors
 from primitive_db.utils import load_table_data
 
 # --- Управление таблицами ---
@@ -61,12 +63,9 @@ def create_table(
 
 
 @handle_db_errors
+@confirm_action(ACTION_DROP_TABLE)
 def drop_table(metadata: Metadata, table_name: str) -> Metadata:
-    """Удаляет таблицу из метаданных.
-
-    >>> drop_table({"users": {"ID": "int"}}, "users")
-    {}
-    """
+    """Удаляет таблицу из метаданных (после подтверждения пользователя)."""
     get_table_columns(metadata, table_name)
     del metadata[table_name]
     return metadata
@@ -174,10 +173,11 @@ def update(
 
 
 @handle_db_errors
+@confirm_action(ACTION_DELETE_ROWS)
 def delete(table_data: TableData, where_clause: Clause) -> TableData:
-    """Удаляет подходящие под условие записи и возвращает оставшиеся.
+    """Удаляет подходящие под условие записи (после подтверждения пользователя).
 
-    >>> delete([{"ID": 1}, {"ID": 2}], {"ID": 1})
+    >>> delete.__wrapped__.__wrapped__([{"ID": 1}, {"ID": 2}], {"ID": 1})
     [{'ID': 2}]
     """
     return [row for row in table_data if not _matches(row, where_clause)]

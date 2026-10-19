@@ -93,6 +93,7 @@ def handle_create_table(
 
 def handle_drop_table(metadata: Metadata, table_name: str) -> None:
     """Удаляет таблицу вместе с её данными."""
+    get_table_columns(metadata, table_name)
     metadata = drop_table(metadata, table_name)
     if metadata is None:
         return
