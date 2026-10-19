@@ -1,11 +1,14 @@
 """Декораторы операций с базой данных."""
 
+import time
+
 import prompt
 
 from primitive_db.constants import (
     CONFIRM_ANSWER,
     CONFIRM_MESSAGE,
     MSG_ACTION_CANCELLED,
+    MSG_EXECUTION_TIME,
     MSG_FILE_NOT_FOUND,
     MSG_UNEXPECTED_ERROR,
 )
@@ -65,3 +68,24 @@ def confirm_action(action_name: str):
         return _copy_metadata(wrapper, func)
 
     return decorator
+
+
+def log_time(func):
+    """Замеряет время выполнения функции и выводит его в консоль.
+
+    >>> @log_time
+    ... def noop():
+    ...     return 42
+    >>> noop()  # doctest: +ELLIPSIS
+    Функция noop выполнилась за ... секунд.
+    42
+    """
+
+    def wrapper(*args, **kwargs):
+        start = time.monotonic()
+        result = func(*args, **kwargs)
+        elapsed = time.monotonic() - start
+        print(MSG_EXECUTION_TIME.format(name=func.__name__, elapsed=elapsed))
+        return result
+
+    return _copy_metadata(wrapper, func)

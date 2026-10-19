@@ -21,7 +21,7 @@ from primitive_db.constants import (
     TableData,
     Value,
 )
-from primitive_db.decorators import confirm_action, handle_db_errors
+from primitive_db.decorators import confirm_action, handle_db_errors, log_time
 from primitive_db.utils import load_table_data
 
 # --- Управление таблицами ---
@@ -129,6 +129,7 @@ def find_ids(table_data: TableData, where_clause: Clause) -> list[int]:
 
 
 @handle_db_errors
+@log_time
 def insert(metadata: Metadata, table_name: str, values: list[Value]) -> TableData:
     """Проверяет значения, добавляет запись с новым ID и возвращает данные таблицы."""
     columns = get_table_columns(metadata, table_name)
@@ -146,11 +147,13 @@ def insert(metadata: Metadata, table_name: str, values: list[Value]) -> TableDat
 
 
 @handle_db_errors
+@log_time
 def select(table_data: TableData, where_clause: Clause | None = None) -> TableData:
     """Возвращает все записи или только подходящие под условие.
 
     >>> rows = [{"ID": 1, "age": 28}, {"ID": 2, "age": 30}]
-    >>> select(rows, {"age": 28})
+    >>> select(rows, {"age": 28})  # doctest: +ELLIPSIS
+    Функция select выполнилась за ... секунд.
     [{'ID': 1, 'age': 28}]
     """
     if where_clause is None:

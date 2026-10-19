@@ -85,6 +85,7 @@ MSG_TABLE_CREATED = 'Таблица "{table}" успешно создана со
 MSG_TABLE_DROPPED = 'Таблица "{table}" успешно удалена.'
 MSG_TABLE_ITEM = "- {table}"
 MSG_ACTION_CANCELLED = "Операция отменена."
+MSG_EXECUTION_TIME = "Функция {name} выполнилась за {elapsed:.3f} секунд."
 MSG_NO_TABLES = "Таблиц пока нет."
 MSG_TABLE_INFO = "Таблица: {table}\nСтолбцы: {columns}\nКоличество записей: {count}"
 MSG_ROW_INSERTED = 'Запись с ID={id} успешно добавлена в таблицу "{table}".'
