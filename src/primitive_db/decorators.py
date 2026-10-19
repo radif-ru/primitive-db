@@ -1,4 +1,4 @@
-"""Декораторы операций с базой данных."""
+"""Декораторы операций с базой данных и кэширование на замыкании."""
 
 import time
 
@@ -89,3 +89,27 @@ def log_time(func):
         return result
 
     return _copy_metadata(wrapper, func)
+
+
+def create_cacher():
+    """Создаёт функцию кэширования, хранящую результаты в своём замыкании.
+
+    >>> cache_result = create_cacher()
+    >>> cache_result("users", lambda: print("вычисляем") or 42)
+    вычисляем
+    42
+    >>> cache_result("users", lambda: print("вычисляем") or 42)
+    42
+    """
+    cache: dict[object, object] = {}
+
+    def cache_result(key: object, value_func):
+        """Возвращает результат из кэша, а при промахе вычисляет и запоминает его."""
+        if key in cache:
+            return cache[key]
+        value = value_func()
+        if value is not None:
+            cache[key] = value
+        return value
+
+    return cache_result
