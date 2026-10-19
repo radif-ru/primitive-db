@@ -19,6 +19,7 @@ from primitive_db.constants import (
     TableData,
     Value,
 )
+from primitive_db.decorators import handle_db_errors
 from primitive_db.utils import load_table_data
 
 # --- Управление таблицами ---
@@ -35,6 +36,7 @@ def get_table_columns(metadata: Metadata, table_name: str) -> Columns:
     return metadata[table_name]
 
 
+@handle_db_errors
 def create_table(
     metadata: Metadata, table_name: str, columns: list[tuple[str, str]]
 ) -> Metadata:
@@ -58,6 +60,7 @@ def create_table(
     return metadata
 
 
+@handle_db_errors
 def drop_table(metadata: Metadata, table_name: str) -> Metadata:
     """Удаляет таблицу из метаданных.
 
@@ -126,6 +129,7 @@ def find_ids(table_data: TableData, where_clause: Clause) -> list[int]:
     return [row[ID_COLUMN] for row in table_data if _matches(row, where_clause)]
 
 
+@handle_db_errors
 def insert(metadata: Metadata, table_name: str, values: list[Value]) -> TableData:
     """Проверяет значения, добавляет запись с новым ID и возвращает данные таблицы."""
     columns = get_table_columns(metadata, table_name)
@@ -142,6 +146,7 @@ def insert(metadata: Metadata, table_name: str, values: list[Value]) -> TableDat
     return table_data
 
 
+@handle_db_errors
 def select(table_data: TableData, where_clause: Clause | None = None) -> TableData:
     """Возвращает все записи или только подходящие под условие.
 
@@ -154,6 +159,7 @@ def select(table_data: TableData, where_clause: Clause | None = None) -> TableDa
     return [row for row in table_data if _matches(row, where_clause)]
 
 
+@handle_db_errors
 def update(
     table_data: TableData, set_clause: Clause, where_clause: Clause
 ) -> TableData:
@@ -167,6 +173,7 @@ def update(
     ]
 
 
+@handle_db_errors
 def delete(table_data: TableData, where_clause: Clause) -> TableData:
     """Удаляет подходящие под условие записи и возвращает оставшиеся.
 

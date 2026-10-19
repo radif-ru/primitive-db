@@ -92,5 +92,9 @@ MSG_DUPLICATE_COLUMN = 'Ошибка: Столбец "{column}" указан н�
 MSG_COLUMN_NOT_FOUND = 'Ошибка: Столбец "{column}" не существует в таблице "{table}".'
 MSG_ID_READONLY = 'Ошибка: Значение столбца "{column}" нельзя изменить.'
 MSG_VALUES_COUNT = "Ошибка: Ожидалось значений: {expected}, передано: {actual}."
+MSG_FILE_NOT_FOUND = (
+    "Ошибка: Файл данных не найден. Возможно, база данных не инициализирована."
+)
+MSG_UNEXPECTED_ERROR = "Произошла непредвиденная ошибка: {error}"
 MSG_UNKNOWN_COMMAND = "Функции {command} нет. Попробуйте снова."
 MSG_INVALID_VALUE = "Некорректное значение: {value}. Попробуйте снова."
