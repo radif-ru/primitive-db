@@ -10,7 +10,7 @@ build:
 	uv build
 
 check-build: build
-	uvx twine check dist/*
+	uvx twine@7.0.0 check dist/*
 
 package-install: build
 	uv tool install --force dist/*.whl
