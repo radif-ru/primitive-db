@@ -1,6 +1,8 @@
 """Бизнес-логика базы данных: управление таблицами и CRUD-операции."""
 
 from primitive_db.constants import (
+    ACTION_DELETE_ROWS,
+    ACTION_DROP_TABLE,
     ID_COLUMN,
     ID_TYPE,
     MSG_COLUMN_NOT_FOUND,
@@ -19,6 +21,7 @@ from primitive_db.constants import (
     TableData,
     Value,
 )
+from primitive_db.decorators import confirm_action, handle_db_errors, log_time
 from primitive_db.utils import load_table_data
 
 # --- Управление таблицами ---
@@ -35,6 +38,7 @@ def get_table_columns(metadata: Metadata, table_name: str) -> Columns:
     return metadata[table_name]
 
 
+@handle_db_errors
 def create_table(
     metadata: Metadata, table_name: str, columns: list[tuple[str, str]]
 ) -> Metadata:
@@ -58,12 +62,10 @@ def create_table(
     return metadata
 
 
+@handle_db_errors
+@confirm_action(ACTION_DROP_TABLE)
 def drop_table(metadata: Metadata, table_name: str) -> Metadata:
-    """Удаляет таблицу из метаданных.
-
-    >>> drop_table({"users": {"ID": "int"}}, "users")
-    {}
-    """
+    """Удаляет таблицу из метаданных (после подтверждения пользователя)."""
     get_table_columns(metadata, table_name)
     del metadata[table_name]
     return metadata
@@ -126,6 +128,8 @@ def find_ids(table_data: TableData, where_clause: Clause) -> list[int]:
     return [row[ID_COLUMN] for row in table_data if _matches(row, where_clause)]
 
 
+@handle_db_errors
+@log_time
 def insert(metadata: Metadata, table_name: str, values: list[Value]) -> TableData:
     """Проверяет значения, добавляет запись с новым ID и возвращает данные таблицы."""
     columns = get_table_columns(metadata, table_name)
@@ -142,11 +146,14 @@ def insert(metadata: Metadata, table_name: str, values: list[Value]) -> TableDat
     return table_data
 
 
+@handle_db_errors
+@log_time
 def select(table_data: TableData, where_clause: Clause | None = None) -> TableData:
     """Возвращает все записи или только подходящие под условие.
 
     >>> rows = [{"ID": 1, "age": 28}, {"ID": 2, "age": 30}]
-    >>> select(rows, {"age": 28})
+    >>> select(rows, {"age": 28})  # doctest: +ELLIPSIS
+    Функция select выполнилась за ... секунд.
     [{'ID': 1, 'age': 28}]
     """
     if where_clause is None:
@@ -154,6 +161,7 @@ def select(table_data: TableData, where_clause: Clause | None = None) -> TableDa
     return [row for row in table_data if _matches(row, where_clause)]
 
 
+@handle_db_errors
 def update(
     table_data: TableData, set_clause: Clause, where_clause: Clause
 ) -> TableData:
@@ -167,10 +175,12 @@ def update(
     ]
 
 
+@handle_db_errors
+@confirm_action(ACTION_DELETE_ROWS)
 def delete(table_data: TableData, where_clause: Clause) -> TableData:
-    """Удаляет подходящие под условие записи и возвращает оставшиеся.
+    """Удаляет подходящие под условие записи (после подтверждения пользователя).
 
-    >>> delete([{"ID": 1}, {"ID": 2}], {"ID": 1})
+    >>> delete.__wrapped__.__wrapped__([{"ID": 1}, {"ID": 2}], {"ID": 1})
     [{'ID': 2}]
     """
     return [row for row in table_data if not _matches(row, where_clause)]

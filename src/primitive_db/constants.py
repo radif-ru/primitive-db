@@ -55,6 +55,10 @@ COMMANDS = frozenset(
 
 # --- Интерфейс ---
 PROMPT_MESSAGE = ">>>Введите команду: "
+CONFIRM_MESSAGE = 'Вы уверены, что хотите выполнить "{action}"? [y/n]: '
+CONFIRM_ANSWER = "y"
+ACTION_DROP_TABLE = "удаление таблицы"
+ACTION_DELETE_ROWS = "удаление записи"
 WELCOME_MESSAGE = "***База данных***"
 HELP_MESSAGE = """
 ***Процесс работы с таблицей***
@@ -80,6 +84,8 @@ HELP_MESSAGE = """
 MSG_TABLE_CREATED = 'Таблица "{table}" успешно создана со столбцами: {columns}'
 MSG_TABLE_DROPPED = 'Таблица "{table}" успешно удалена.'
 MSG_TABLE_ITEM = "- {table}"
+MSG_ACTION_CANCELLED = "Операция отменена."
+MSG_EXECUTION_TIME = "Функция {name} выполнилась за {elapsed:.3f} секунд."
 MSG_NO_TABLES = "Таблиц пока нет."
 MSG_TABLE_INFO = "Таблица: {table}\nСтолбцы: {columns}\nКоличество записей: {count}"
 MSG_ROW_INSERTED = 'Запись с ID={id} успешно добавлена в таблицу "{table}".'
@@ -92,5 +98,9 @@ MSG_DUPLICATE_COLUMN = 'Ошибка: Столбец "{column}" указан н�
 MSG_COLUMN_NOT_FOUND = 'Ошибка: Столбец "{column}" не существует в таблице "{table}".'
 MSG_ID_READONLY = 'Ошибка: Значение столбца "{column}" нельзя изменить.'
 MSG_VALUES_COUNT = "Ошибка: Ожидалось значений: {expected}, передано: {actual}."
+MSG_FILE_NOT_FOUND = (
+    "Ошибка: Файл данных не найден. Возможно, база данных не инициализирована."
+)
+MSG_UNEXPECTED_ERROR = "Произошла непредвиденная ошибка: {error}"
 MSG_UNKNOWN_COMMAND = "Функции {command} нет. Попробуйте снова."
 MSG_INVALID_VALUE = "Некорректное значение: {value}. Попробуйте снова."

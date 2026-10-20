@@ -39,6 +39,7 @@ from primitive_db.core import (
     validate_assignments,
     validate_clause,
 )
+from primitive_db.decorators import create_cacher, handle_db_errors
 from primitive_db.parser import (
     parse_columns,
     parse_delete,
@@ -54,6 +55,25 @@ from primitive_db.utils import (
     save_metadata,
     save_table_data,
 )
+
+# --- Кэш выборок ---
+
+# Ключ кэша select — (таблица, версия данных, условие). Версия растёт при каждом
+# изменении таблицы, поэтому устаревшие результаты не возвращаются.
+_select_cache = create_cacher()
+_table_versions: dict[str, int] = {}
+
+
+def _invalidate_cache(table_name: str) -> None:
+    """Повышает версию данных таблицы, чтобы старые ключи кэша не совпадали."""
+    _table_versions[table_name] = _table_versions.get(table_name, 0) + 1
+
+
+def store_table_data(table_name: str, table_data: TableData) -> None:
+    """Сохраняет данные таблицы и сбрасывает её закэшированные выборки."""
+    save_table_data(table_name, table_data)
+    _invalidate_cache(table_name)
+
 
 # --- Вывод ---
 
@@ -83,6 +103,8 @@ def handle_create_table(
 ) -> None:
     """Создаёт таблицу и сохраняет обновлённые метаданные."""
     metadata = create_table(metadata, table_name, parse_columns(definitions))
+    if metadata is None:
+        return
     save_metadata(META_FILE, metadata)
     columns = format_columns(metadata[table_name])
     print(MSG_TABLE_CREATED.format(table=table_name, columns=columns))
@@ -90,8 +112,13 @@ def handle_create_table(
 
 def handle_drop_table(metadata: Metadata, table_name: str) -> None:
     """Удаляет таблицу вместе с её данными."""
-    save_metadata(META_FILE, drop_table(metadata, table_name))
+    get_table_columns(metadata, table_name)
+    metadata = drop_table(metadata, table_name)
+    if metadata is None:
+        return
+    save_metadata(META_FILE, metadata)
     delete_table_data(table_name)
+    _invalidate_cache(table_name)
     print(MSG_TABLE_DROPPED.format(table=table_name))
 
 
@@ -118,7 +145,9 @@ def handle_insert(metadata: Metadata, user_input: str) -> None:
     """Добавляет запись в таблицу и сохраняет данные."""
     table_name, values = parse_insert(user_input)
     table_data = insert(metadata, table_name, values)
-    save_table_data(table_name, table_data)
+    if table_data is None:
+        return
+    store_table_data(table_name, table_data)
     print(MSG_ROW_INSERTED.format(id=table_data[-1][ID_COLUMN], table=table_name))
 
 
@@ -126,7 +155,16 @@ def handle_select(metadata: Metadata, user_input: str) -> None:
     """Выводит все записи таблицы или только подходящие под условие."""
     table_name, where_clause = parse_select(user_input)
     validate_clause(metadata, table_name, where_clause)
-    rows = select(load_table_data(table_name), where_clause)
+    cache_key = (
+        table_name,
+        _table_versions.get(table_name, 0),
+        tuple((where_clause or {}).items()),
+    )
+    rows = _select_cache(
+        cache_key, lambda: select(load_table_data(table_name), where_clause)
+    )
+    if rows is None:
+        return
     print_rows(get_table_columns(metadata, table_name), rows)
 
 
@@ -140,7 +178,10 @@ def handle_update(metadata: Metadata, user_input: str) -> None:
     if not row_ids:
         print(MSG_ROWS_NOT_FOUND)
         return
-    save_table_data(table_name, update(table_data, set_clause, where_clause))
+    table_data = update(table_data, set_clause, where_clause)
+    if table_data is None:
+        return
+    store_table_data(table_name, table_data)
     for row_id in row_ids:
         print(MSG_ROW_UPDATED.format(id=row_id, table=table_name))
 
@@ -154,7 +195,10 @@ def handle_delete(metadata: Metadata, user_input: str) -> None:
     if not row_ids:
         print(MSG_ROWS_NOT_FOUND)
         return
-    save_table_data(table_name, delete(table_data, where_clause))
+    table_data = delete(table_data, where_clause)
+    if table_data is None:
+        return
+    store_table_data(table_name, table_data)
     for row_id in row_ids:
         print(MSG_ROW_DELETED.format(id=row_id, table=table_name))
 
@@ -162,34 +206,32 @@ def handle_delete(metadata: Metadata, user_input: str) -> None:
 # --- Основной цикл ---
 
 
+@handle_db_errors
 def handle_command(metadata: Metadata, user_input: str) -> None:
     """Разбирает введённую строку и выполняет соответствующую команду."""
-    try:
-        match split_args(user_input):
-            case ["help"]:
-                print_help()
-            case ["list_tables"]:
-                handle_list_tables(metadata)
-            case ["create_table", table_name, *definitions] if definitions:
-                handle_create_table(metadata, table_name, definitions)
-            case ["drop_table", table_name]:
-                handle_drop_table(metadata, table_name)
-            case ["info", table_name]:
-                handle_info(metadata, table_name)
-            case ["insert", *_]:
-                handle_insert(metadata, user_input)
-            case ["select", *_]:
-                handle_select(metadata, user_input)
-            case ["update", *_]:
-                handle_update(metadata, user_input)
-            case ["delete", *_]:
-                handle_delete(metadata, user_input)
-            case [command, *_] if command in COMMANDS:
-                print(MSG_INVALID_VALUE.format(value=user_input.strip()))
-            case [command, *_]:
-                print(MSG_UNKNOWN_COMMAND.format(command=command))
-    except (KeyError, ValueError) as error:
-        print(error.args[0])
+    match split_args(user_input):
+        case ["help"]:
+            print_help()
+        case ["list_tables"]:
+            handle_list_tables(metadata)
+        case ["create_table", table_name, *definitions] if definitions:
+            handle_create_table(metadata, table_name, definitions)
+        case ["drop_table", table_name]:
+            handle_drop_table(metadata, table_name)
+        case ["info", table_name]:
+            handle_info(metadata, table_name)
+        case ["insert", *_]:
+            handle_insert(metadata, user_input)
+        case ["select", *_]:
+            handle_select(metadata, user_input)
+        case ["update", *_]:
+            handle_update(metadata, user_input)
+        case ["delete", *_]:
+            handle_delete(metadata, user_input)
+        case [command, *_] if command in COMMANDS:
+            print(MSG_INVALID_VALUE.format(value=user_input.strip()))
+        case [command, *_]:
+            print(MSG_UNKNOWN_COMMAND.format(command=command))
 
 
 def run() -> None:
