@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Sync dependencies
+        run: uv sync --locked
+
+      - name: Lint and check formatting with ruff
+        run: make lint
+
+      - name: Run doctests
+        run: make test
+
+      - name: Build package and check metadata
+        run: make check-build
+
+      - name: Run CLI scenario
+        shell: bash
+        run: |
+          printf '%s\n' \
+            'create_table users name:str age:int is_active:bool' \
+            'insert into users values ("Sergei", 28, true)' \
+            'select from users where age = 28' \
+            'update users set age = 29 where name = "Sergei"' \
+            'delete from users where ID = 1' 'y' \
+            'info users' \
+            'drop_table users' 'y' \
+            'exit' | uv run database | tee output.txt
+          for expected in \
+            'Таблица "users" успешно создана со столбцами: ID:int, name:str, age:int, is_active:bool' \
+            'Запись с ID=1 успешно добавлена в таблицу "users".' \
+            '| 1  | Sergei |  28 |    True   |' \
+            'Запись с ID=1 в таблице "users" успешно обновлена.' \
+            'Запись с ID=1 успешно удалена из таблицы "users".' \
+            'Количество записей: 0' \
+            'Таблица "users" успешно удалена.'
+          do
+            grep -qF -- "$expected" output.txt || { echo "Не найдено: $expected"; exit 1; }
+          done
