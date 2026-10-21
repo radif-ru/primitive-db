@@ -2,6 +2,54 @@
 
 Консольная СУБД на JSON-файлах с SQL-подобными командами.
 
+[![CI](https://github.com/radif-ru/primitive-db/actions/workflows/ci.yml/badge.svg)](https://github.com/radif-ru/primitive-db/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9?logo=uv&logoColor=white)](https://docs.astral.sh/uv/)
+[![Ruff](https://img.shields.io/badge/ruff-linter-D7FF64?logo=ruff)](https://docs.astral.sh/ruff/)
+[![Dependencies](https://img.shields.io/badge/dependencies-prompt%20%7C%20prettytable-blue?logo=pypi&logoColor=white)](pyproject.toml)
+
+Проект выполнен в рамках дисциплины «Программирование на Python» магистерской
+программы [«Обработка данных и применение искусственного интеллекта»](https://eis2.mephi.ru/programs/Program/Details/1354)
+(направление 01.04.02 «Прикладная математика и информатика»),
+[Институт интеллектуальных кибернетических систем](https://icis.mephi.ru/)
+[НИЯУ МИФИ](https://mephi.ru/).
+
+## Задача
+
+Интерактивная консольная база данных: пользователь создаёт таблицы с типизированными
+столбцами и работает с записями командами, похожими на SQL (`insert`, `select`,
+`update`, `delete` с условиями `where`). Схема таблиц и данные сохраняются в
+JSON-файлах между запусками, результаты выборок выводятся таблицей.
+
+## Принципы реализации
+
+- Процедурный стиль без классов; модули разделены по ответственности (см. ниже).
+- Из стандартной библиотеки — только `json`, `shlex`, `time`, `os`; внешние
+  зависимости — `prompt` и `prettytable`, разработка — `ruff`.
+- Все неизменяемые значения — пути, типы, ключевые слова, тексты сообщений —
+  в `constants.py`; функции бросают `KeyError` / `ValueError` с готовым
+  текстом, а выводит его единственный декоратор `handle_db_errors`.
+- Разбор команд — на `shlex` в non-posix режиме: кавычки сохраняются, поэтому
+  `"28"` — строка, `28` — число, а запятые и пробелы внутри строк не ломают разбор.
+- Типы значений проверяются по схеме (`bool` не принимается за `int`), имя
+  таблицы должно быть идентификатором — путь `data/<имя>.json` не выходит за
+  пределы каталога.
+- Аннотации типов (`type`-алиасы Python 3.12), docstring у каждой функции,
+  doctest-примеры для парсера, бизнес-логики и декораторов.
+- Ветвление по GitHub Flow, семантическое версионирование, проверки в CI.
+
+## Архитектура
+
+| Модуль | Ответственность |
+|--------|-----------------|
+| `main.py` | точка входа, консольная команда `database` |
+| `engine.py` | основной цикл, диспетчеризация команд (`match`/`case`), вывод, кэш выборок |
+| `core.py` | бизнес-логика: таблицы, CRUD, валидация типов |
+| `parser.py` | разбор команд, значений, условий `where` и присваиваний `set` |
+| `utils.py` | чтение и запись `db_meta.json` и `data/<таблица>.json` |
+| `decorators.py` | `handle_db_errors`, `confirm_action`, `log_time`, `create_cacher` |
+| `constants.py` | константы, `type`-алиасы и шаблоны сообщений |
+
 ## Установка и запуск
 
 Нужен [uv](https://docs.astral.sh/uv/):
@@ -102,3 +150,46 @@ database
 Вы уверены, что хотите выполнить "удаление записи"? [y/n]: n
 Операция отменена.
 ```
+
+## Проверки
+
+```bash
+make lint           # ruff check + ruff format --check
+make test           # doctest для всех модулей пакета
+make check-build    # uv build + twine check
+```
+
+Те же шаги и сквозной сценарий через stdin запускаются в
+[GitHub Actions](.github/workflows/ci.yml) на каждый push и pull request.
+
+## Структура проекта
+
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml          # ruff, doctest, сборка пакета, сценарий CLI
+├── src/
+│   └── primitive_db/
+│       ├── __init__.py
+│       ├── constants.py    # константы, типы, тексты сообщений
+│       ├── core.py         # таблицы и CRUD-операции
+│       ├── decorators.py   # декораторы и кэш на замыкании
+│       ├── engine.py       # основной цикл и обработчики команд
+│       ├── main.py         # точка входа
+│       ├── parser.py       # разбор команд и условий
+│       └── utils.py        # работа с JSON-файлами
+├── .gitignore
+├── .python-version         # закреплённая версия Python
+├── Makefile                # install, run, lint, test, build, package-install
+├── pyproject.toml          # метаданные пакета, зависимости, настройки ruff
+├── README.md
+└── uv.lock                 # зафиксированные версии зависимостей
+```
+
+Во время работы в текущем каталоге создаются `db_meta.json` и `data/` — они
+исключены из репозитория через `.gitignore`.
+
+---
+
+Автор — [Радиф Илалтдинов](https://radif.ru)
