@@ -7,6 +7,7 @@
 [![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9?logo=uv&logoColor=white)](https://docs.astral.sh/uv/)
 [![Ruff](https://img.shields.io/badge/ruff-linter-D7FF64?logo=ruff)](https://docs.astral.sh/ruff/)
 [![Dependencies](https://img.shields.io/badge/dependencies-prompt%20%7C%20prettytable-blue?logo=pypi&logoColor=white)](pyproject.toml)
+[![asciinema](https://img.shields.io/badge/asciinema-demo-D40000?logo=asciinema&logoColor=white)](https://asciinema.org/a/eoh2IgYzTu6bAajb)
 
 Проект выполнен в рамках дисциплины «Программирование на Python» магистерской
 программы [«Обработка данных и применение искусственного интеллекта»](https://eis2.mephi.ru/programs/Program/Details/1354)
@@ -90,6 +91,8 @@ database
 Таблица "users" успешно удалена.
 ```
 
+[![asciicast](https://asciinema.org/a/8omJdzo0K0R1e4dL.svg)](https://asciinema.org/a/8omJdzo0K0R1e4dL)
+
 ## CRUD-операции
 
 | Команда | Действие |
@@ -131,6 +134,8 @@ database
 Количество записей: 0
 ```
 
+[![asciicast](https://asciinema.org/a/5B4s2QDzMWk2gCgi.svg)](https://asciinema.org/a/5B4s2QDzMWk2gCgi)
+
 ## Обработка ошибок, подтверждения и кэш
 
 Повторяющаяся логика вынесена в `decorators.py`:
@@ -150,6 +155,13 @@ database
 Вы уверены, что хотите выполнить "удаление записи"? [y/n]: n
 Операция отменена.
 ```
+
+## Демонстрация
+
+Полный цикл: установка пакета, создание таблицы, все CRUD-операции, ошибки
+валидации, кэш выборок, подтверждение удаления и удаление таблицы.
+
+[![asciicast](https://asciinema.org/a/eoh2IgYzTu6bAajb.svg)](https://asciinema.org/a/eoh2IgYzTu6bAajb)
 
 ## Проверки
 
