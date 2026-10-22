@@ -91,7 +91,7 @@ database
 Таблица "users" успешно удалена.
 ```
 
-[![asciicast](https://asciinema.org/a/8omJdzo0K0R1e4dL.svg)](https://asciinema.org/a/8omJdzo0K0R1e4dL)
+[![Запись asciinema: управление таблицами](docs/images/asciinema-tables.png)](https://asciinema.org/a/8omJdzo0K0R1e4dL)
 
 ## CRUD-операции
 
@@ -134,7 +134,7 @@ database
 Количество записей: 0
 ```
 
-[![asciicast](https://asciinema.org/a/5B4s2QDzMWk2gCgi.svg)](https://asciinema.org/a/5B4s2QDzMWk2gCgi)
+[![Запись asciinema: CRUD-операции](docs/images/asciinema-crud.png)](https://asciinema.org/a/5B4s2QDzMWk2gCgi)
 
 ## Обработка ошибок, подтверждения и кэш
 
@@ -161,7 +161,7 @@ database
 Полный цикл: установка пакета, создание таблицы, все CRUD-операции, ошибки
 валидации, кэш выборок, подтверждение удаления и удаление таблицы.
 
-[![asciicast](https://asciinema.org/a/eoh2IgYzTu6bAajb.svg)](https://asciinema.org/a/eoh2IgYzTu6bAajb)
+[![Запись asciinema: полный цикл работы](docs/images/asciinema-full-cycle.png)](https://asciinema.org/a/eoh2IgYzTu6bAajb)
 
 ## Проверки
 
@@ -181,6 +181,8 @@ make check-build    # uv build + twine check
 ├── .github/
 │   └── workflows/
 │       └── ci.yml          # ruff, doctest, сборка пакета, сценарий CLI
+├── docs/
+│   └── images/             # превью записей asciinema
 ├── src/
 │   └── primitive_db/
 │       ├── __init__.py
